@@ -1,45 +1,40 @@
-const GRID_SIZE = 8;
-
-const directionOrder = ['up', 'right', 'down', 'left'];
-const directionVectors = {
-  up: [-1, 0],
-  right: [0, 1],
-  down: [1, 0],
-  left: [0, -1],
-};
-const directionRotation = { up: 0, right: 90, down: 180, left: 270 };
+const ANGLES = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330];
+const DEGREE_OPTIONS = [['30', '30'], ['60', '60'], ['90', '90'], ['120', '120'], ['180', '180']];
 
 const objectAssets = {
-  sun: 'sun_bat.svg',
-  patch: 'patch.svg',
-  air: 'air.svg',
+  neutral: 'neutral.svg',
+  robo: 'robo.svg',
+  roboDone: 'robo2.svg',
+  virus: 'virus.svg',
+  virusDone: 'virus2.svg',
 };
 
-const PROGRESS_STORAGE_KEY = 'mazeProgressV1';
-const DEBUG_UNLOCK_KEY = 'mazeDebugUnlockAll';
-
 const levels = [
-  { start: [3, 1], targets: [{ row: 3, col: 5, type: 'sun' }], minCommands: 5 },
-  { start: [2, 1], targets: [{ row: 5, col: 5, type: 'sun' }], minCommands: 6 },
-  { start: [1, 2], targets: [{ row: 2, col: 2, type: 'patch' }, { row: 3, col: 2, type: 'patch' }, { row: 4, col: 2, type: 'patch' }, { row: 5, col: 2, type: 'patch' }], minCommands: 4 },
-  { start: [1, 2], targets: [{ row: 1, col: 3, type: 'patch' }, { row: 1, col: 4, type: 'patch' }, { row: 2, col: 4, type: 'air' }, { row: 3, col: 4, type: 'air' }, { row: 4, col: 4, type: 'air' }], minCommands: 8 },
-  { start: [6, 2], targets: [{ row: 2, col: 5, type: 'sun' }, { row: 3, col: 5, type: 'sun' }, { row: 4, col: 5, type: 'sun' }, { row: 5, col: 5, type: 'sun' }, { row: 6, col: 5, type: 'patch' }], minCommands: 7 },
-  { start: [1, 2], targets: [{ row: 2, col: 2, type: 'patch' }, { row: 3, col: 2, type: 'air' }, { row: 4, col: 2, type: 'patch' }, { row: 5, col: 2, type: 'air' }, { row: 6, col: 2, type: 'patch' }, { row: 7, col: 2, type: 'air' }], minCommands: 6 },
-  { start: [3, 1], targets: [{ row: 3, col: 2, type: 'sun' }, { row: 3, col: 3, type: 'patch' }, { row: 3, col: 4, type: 'air' }], minCommands: 6 },
-  { start: [3, 1], targets: [{ row: 3, col: 2, type: 'sun' }, { row: 3, col: 3, type: 'patch' }, { row: 3, col: 4, type: 'air' }, { row: 3, col: 5, type: 'sun' }, { row: 3, col: 6, type: 'patch' }, { row: 3, col: 7, type: 'air' }], minCommands: 7 },
-  { start: [6, 1], targets: [{ row: 4, col: 3, type: 'sun' }, { row: 4, col: 4, type: 'patch' }, { row: 4, col: 5, type: 'air' }, { row: 5, col: 1, type: 'sun' }, { row: 5, col: 2, type: 'patch' }, { row: 5, col: 3, type: 'air' }], minCommands: 9 },
-  { start: [6, 3], targets: [{ row: 0, col: 3, type: 'patch' }, { row: 2, col: 3, type: 'patch' }, { row: 4, col: 3, type: 'patch' }], minCommands: 5 },
-  { start: [1, 1], targets: [{ row: 1, col: 5, type: 'air' }, { row: 5, col: 1, type: 'air' }, { row: 5, col: 5, type: 'air' }], minCommands: 5 },
-  { start: [2, 1], targets: [{ row: 2, col: 2, type: 'air' }, { row: 2, col: 3, type: 'sun' }, { row: 3, col: 2, type: 'air' }, { row: 3, col: 3, type: 'sun' }, { row: 4, col: 2, type: 'air' }, { row: 4, col: 3, type: 'sun' }, { row: 5, col: 2, type: 'air' }, { row: 5, col: 3, type: 'sun' }], minCommands: 11 },
-  { start: [2, 1], targets: [{ row: 2, col: 2, type: 'air' }, { row: 2, col: 3, type: 'sun' }, { row: 2, col: 4, type: 'air' }, { row: 2, col: 5, type: 'sun' }, { row: 3, col: 2, type: 'air' }, { row: 3, col: 3, type: 'sun' }, { row: 3, col: 4, type: 'air' }, { row: 3, col: 5, type: 'sun' }, { row: 4, col: 2, type: 'air' }, { row: 4, col: 3, type: 'sun' }, { row: 4, col: 4, type: 'air' }, { row: 4, col: 5, type: 'sun' }, { row: 5, col: 2, type: 'air' }, { row: 5, col: 3, type: 'sun' }, { row: 5, col: 4, type: 'air' }, { row: 5, col: 5, type: 'sun' }], minCommands: 13 },
-  { start: [1, 1], targets: [{ row: 1, col: 2, type: 'sun' }, { row: 1, col: 3, type: 'air' }, { row: 1, col: 4, type: 'patch' }, { row: 2, col: 1, type: 'patch' }, { row: 2, col: 5, type: 'sun' }, { row: 3, col: 1, type: 'air' }, { row: 3, col: 5, type: 'air' }, { row: 4, col: 1, type: 'sun' }, { row: 4, col: 5, type: 'patch' }, { row: 5, col: 2, type: 'patch' }, { row: 5, col: 3, type: 'air' }, { row: 5, col: 4, type: 'sun' }], minCommands: 9 },
-  { start: [1, 1], targets: [{ row: 1, col: 2, type: 'sun' }, { row: 1, col: 3, type: 'air' }, { row: 1, col: 4, type: 'patch' }, { row: 2, col: 2, type: 'patch' }, { row: 2, col: 3, type: 'air' }, { row: 2, col: 4, type: 'sun' }, { row: 3, col: 2, type: 'sun' }, { row: 3, col: 3, type: 'air' }, { row: 3, col: 4, type: 'patch' }, { row: 4, col: 2, type: 'patch' }, { row: 4, col: 3, type: 'air' }, { row: 4, col: 4, type: 'sun' }], minCommands: 15 },
+  {
+    title: 'Уровень 1',
+    hint: 'Поверни пушку к роботу и активируй, затем к вирусу и очисти.',
+    items: {
+      0: 'neutral', 30: 'neutral', 60: 'robo', 90: 'neutral', 120: 'neutral', 150: 'neutral',
+      180: 'virus', 210: 'neutral', 240: 'neutral', 270: 'neutral', 300: 'neutral', 330: 'neutral',
+    },
+  },
+  {
+    title: 'Уровень 2',
+    hint: 'Активируй всех роботов и очисти все вирусы.',
+    items: {
+      0: 'virus', 30: 'neutral', 60: 'robo', 90: 'neutral', 120: 'neutral', 150: 'virus',
+      180: 'neutral', 210: 'neutral', 240: 'robo', 270: 'neutral', 300: 'neutral', 330: 'neutral',
+    },
+  },
+  {
+    title: 'Уровень 3',
+    hint: 'Используй цикл, чтобы быстрее пройти уровень.',
+    items: {
+      0: 'neutral', 30: 'robo', 60: 'neutral', 90: 'virus', 120: 'neutral', 150: 'robo',
+      180: 'neutral', 210: 'virus', 240: 'neutral', 270: 'neutral', 300: 'robo', 330: 'neutral',
+    },
+  },
 ];
-
-function getLevelName(levelIndex) {
-  if (levelIndex < 9) return `Уровень ${levelIndex + 1}`;
-  return `Доп.задание ${levelIndex - 8}`;
-}
 
 const board = document.getElementById('board');
 const levelTitle = document.getElementById('level-title');
@@ -57,21 +52,32 @@ const levelRule = document.getElementById('level-rule');
 
 let workspace;
 let currentLevelIndex = 0;
-let currentPosition = [0, 0];
-let currentDirection = 'right';
+let gunAngle = 0;
+let levelItems = {};
 let isProgramRunning = false;
-let placedObjects = new Map();
-let completedLevels = Array(levels.length).fill(false);
 
 const defineBlocksWithJsonArray = Blockly.common?.defineBlocksWithJsonArray ?? Blockly.defineBlocksWithJsonArray;
 
 defineBlocksWithJsonArray([
-  { type: 'maze_start', message0: 'Запуск', nextStatement: null, colour: 45, deletable: false, movable: false, hat: 'cap' },
-  { type: 'maze_move_forward', message0: 'Шаг вперед', previousStatement: null, nextStatement: null, colour: 340 },
-  { type: 'maze_turn_left', message0: 'Повернуть налево', previousStatement: null, nextStatement: null, colour: 340 },
-  { type: 'maze_turn_right', message0: 'Повернуть направо', previousStatement: null, nextStatement: null, colour: 340 },
+  { type: 'train_start', message0: 'Старт', nextStatement: null, colour: 45, deletable: false, movable: false, hat: 'cap' },
   {
-    type: 'maze_repeat',
+    type: 'turn_clockwise',
+    message0: 'Повернуться ↻ на %1 °',
+    args0: [{ type: 'field_dropdown', name: 'DEGREES', options: DEGREE_OPTIONS }],
+    previousStatement: null,
+    nextStatement: null,
+    colour: 325,
+  },
+  {
+    type: 'turn_counterclockwise',
+    message0: 'Повернуться ↺ на %1 °',
+    args0: [{ type: 'field_dropdown', name: 'DEGREES', options: DEGREE_OPTIONS }],
+    previousStatement: null,
+    nextStatement: null,
+    colour: 325,
+  },
+  {
+    type: 'repeat_n',
     message0: 'Повторить %1 раз %2 %3',
     args0: [
       { type: 'field_number', name: 'TIMES', value: 2, min: 1, precision: 1 },
@@ -80,35 +86,28 @@ defineBlocksWithJsonArray([
     ],
     previousStatement: null,
     nextStatement: null,
-    colour: 200,
+    colour: 205,
   },
-  { type: 'maze_place_sun', message0: 'Поставить солнечную батарею', previousStatement: null, nextStatement: null, colour: 120 },
-  { type: 'maze_place_patch', message0: 'Поставить заплатку', previousStatement: null, nextStatement: null, colour: 120 },
-  { type: 'maze_place_air', message0: 'Поставить баллон с воздухом', previousStatement: null, nextStatement: null, colour: 120 },
+  { type: 'activate_target', message0: 'Активировать', previousStatement: null, nextStatement: null, colour: 120 },
+  { type: 'clear_target', message0: 'Очистить', previousStatement: null, nextStatement: null, colour: 120 },
 ]);
 
-function getCurrentLevel() {
-  return levels[currentLevelIndex];
-}
-
-function getToolboxForLevel(levelIndex) {
-  const contents = [
-    { kind: 'block', type: 'maze_repeat', fields: { TIMES: 2 } },
-    { kind: 'block', type: 'maze_move_forward' },
-    { kind: 'block', type: 'maze_turn_left' },
-    { kind: 'block', type: 'maze_turn_right' },
-  ];
-
-  if (levelIndex >= 0) contents.push({ kind: 'block', type: 'maze_place_sun' });
-  if (levelIndex >= 2) contents.push({ kind: 'block', type: 'maze_place_patch' });
-  if (levelIndex >= 3) contents.push({ kind: 'block', type: 'maze_place_air' });
-
-  return { kind: 'flyoutToolbox', contents };
+function getToolbox() {
+  return {
+    kind: 'flyoutToolbox',
+    contents: [
+      { kind: 'block', type: 'repeat_n', fields: { TIMES: 2 } },
+      { kind: 'block', type: 'turn_clockwise', fields: { DEGREES: '30' } },
+      { kind: 'block', type: 'turn_counterclockwise', fields: { DEGREES: '30' } },
+      { kind: 'block', type: 'activate_target' },
+      { kind: 'block', type: 'clear_target' },
+    ],
+  };
 }
 
 function resetWorkspace() {
   workspace.clear();
-  const startBlock = workspace.newBlock('maze_start');
+  const startBlock = workspace.newBlock('train_start');
   startBlock.initSvg();
   startBlock.render();
   startBlock.moveBy(36, 36);
@@ -117,7 +116,7 @@ function resetWorkspace() {
 
 function initializeBlockly() {
   workspace = Blockly.inject(workspaceContainer, {
-    toolbox: getToolboxForLevel(currentLevelIndex),
+    toolbox: getToolbox(),
     toolboxPosition: 'start',
     trashcan: true,
     renderer: 'zelos',
@@ -131,149 +130,99 @@ function initializeBlockly() {
   window.addEventListener('resize', () => Blockly.svgResize(workspace));
 }
 
-function toKey(row, col) {
-  return `${row},${col}`;
+function normalizeAngle(angle) {
+  return ((angle % 360) + 360) % 360;
 }
 
-function loadProgress() {
-  try {
-    const raw = localStorage.getItem(PROGRESS_STORAGE_KEY);
-    if (!raw) return;
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed?.completedLevels)) return;
-    completedLevels = levels.map((_, idx) => Boolean(parsed.completedLevels[idx]));
-  } catch {
-    completedLevels = Array(levels.length).fill(false);
-  }
+function cloneItemsForLevel(index) {
+  return JSON.parse(JSON.stringify(levels[index].items));
 }
 
-function saveProgress() {
-  localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify({ completedLevels }));
-}
-
-function isLevelUnlocked(index) {
-  if (localStorage.getItem(DEBUG_UNLOCK_KEY) === '1') return true;
-  if (index === 0) return true;
-  for (let idx = 0; idx < index; idx += 1) {
-    if (!completedLevels[idx]) return false;
-  }
-  return true;
-}
-
-function renderLevelOptions() {
-  levelSelect.innerHTML = levels.map((_, idx) => {
-    const isLocked = !isLevelUnlocked(idx);
-    const completeIcon = completedLevels[idx] ? '✅ ' : '';
-    const lockIcon = isLocked ? '🔒 ' : '';
-    return (
-      `<option value="${idx}" ${idx === currentLevelIndex ? 'selected' : ''} ${isLocked ? 'disabled' : ''}>${lockIcon}${completeIcon}${getLevelName(idx)}</option>`
-    );
-  }).join('');
-}
-
-function markLevelCompleted(levelIndex) {
-  if (completedLevels[levelIndex]) return;
-  completedLevels[levelIndex] = true;
-  saveProgress();
-}
-
-function getHighestUnlockedLevel() {
-  for (let idx = 1; idx < levels.length; idx += 1) {
-    if (!isLevelUnlocked(idx)) return idx - 1;
-  }
-  return levels.length - 1;
-}
-
-function syncCurrentLevelWithProgress() {
-  const highestUnlocked = getHighestUnlockedLevel();
-  if (currentLevelIndex > highestUnlocked) currentLevelIndex = highestUnlocked;
+function angleToPosition(angle) {
+  const radius = 41;
+  const rad = ((angle - 90) * Math.PI) / 180;
+  return {
+    x: 50 + Math.cos(rad) * radius,
+    y: 50 + Math.sin(rad) * radius,
+  };
 }
 
 function renderBoard() {
-  const level = getCurrentLevel();
-  const targetMap = new Map(level.targets.map((target) => [toKey(target.row, target.col), target.type]));
-
-  board.style.gridTemplateColumns = `repeat(${GRID_SIZE}, minmax(0, 1fr))`;
-  board.style.gridTemplateRows = `repeat(${GRID_SIZE}, minmax(0, 1fr))`;
   board.innerHTML = '';
 
-  const boardBackground = document.createElement('div');
-  boardBackground.className = 'board-background';
-  boardBackground.style.backgroundImage = "url('./Back.svg')";
-  board.appendChild(boardBackground);
+  ANGLES.forEach((angle) => {
+    const type = levelItems[angle];
+    const item = document.createElement('div');
+    item.className = 'orbit-item';
+    item.style.backgroundImage = `url('./${objectAssets[type]}')`;
+    const position = angleToPosition(angle);
+    item.style.left = `${position.x}%`;
+    item.style.top = `${position.y}%`;
+    board.appendChild(item);
+  });
 
-  for (let row = 0; row < GRID_SIZE; row += 1) {
-    for (let col = 0; col < GRID_SIZE; col += 1) {
-      const key = toKey(row, col);
-      const cell = document.createElement('div');
-      cell.className = 'cell';
+  const gun = document.createElement('div');
+  gun.className = 'gun';
+  gun.style.transform = `translate(-50%, -50%) rotate(${gunAngle}deg)`;
+  board.appendChild(gun);
 
-      const ghostType = targetMap.get(key);
-      if (ghostType) {
-        const ghost = document.createElement('div');
-        ghost.className = `object ghost ${ghostType}`;
-        ghost.style.backgroundImage = `url('./${objectAssets[ghostType]}')`;
-        cell.appendChild(ghost);
-      }
-
-      const placedType = placedObjects.get(key);
-      if (placedType) {
-        const placed = document.createElement('div');
-        placed.className = 'object placed';
-        placed.style.backgroundImage = `url('./${objectAssets[placedType]}')`;
-        cell.appendChild(placed);
-      }
-
-      if (currentPosition[0] === row && currentPosition[1] === col) {
-        const hero = document.createElement('div');
-        hero.className = 'hero';
-        hero.style.transform = `rotate(${directionRotation[currentDirection]}deg) scale(1.3)`;
-        cell.appendChild(hero);
-      }
-
-      board.appendChild(cell);
-    }
-  }
-
-  levelTitle.textContent = getLevelName(currentLevelIndex);
+  const level = levels[currentLevelIndex];
+  levelTitle.textContent = level.title;
   levelProgress.textContent = `${currentLevelIndex + 1} / ${levels.length}`;
-  levelHint.textContent = 'Цель: поставь все объекты на отмеченные клетки.';
-  levelRule.textContent = `Составь программу из ${level.minCommands} команд.`;
-  renderLevelOptions();
+  levelHint.textContent = level.hint;
+  levelRule.textContent = 'Цель: активировать всех роботов и очистить все вирусы.';
+}
+
+function renderLevelOptions() {
+  levelSelect.innerHTML = levels
+    .map((level, idx) => `<option value="${idx}" ${idx === currentLevelIndex ? 'selected' : ''}>${level.title}</option>`)
+    .join('');
+}
+
+function hideLevelCompleteModal() {
+  levelCompleteModal.classList.add('hidden');
+}
+
+function showLevelCompleteModal(message, title, canProceed) {
+  levelCompleteTitle.textContent = title;
+  levelCompleteMessage.textContent = message;
+  nextLevelButton.hidden = !canProceed;
+  retryLevelButton.hidden = false;
+  levelCompleteModal.classList.remove('hidden');
 }
 
 function resetLevelState() {
-  const level = getCurrentLevel();
-  currentPosition = [...level.start];
-  currentDirection = 'right';
-  placedObjects = new Map();
+  gunAngle = 0;
+  levelItems = cloneItemsForLevel(currentLevelIndex);
   renderBoard();
 }
 
 function setLevel(index) {
   if (index < 0 || index >= levels.length) return;
-  if (!isLevelUnlocked(index)) {
-    renderLevelOptions();
-    return;
-  }
   currentLevelIndex = index;
   hideLevelCompleteModal();
-  workspace.updateToolbox(getToolboxForLevel(index));
   resetWorkspace();
   resetLevelState();
+  renderLevelOptions();
 }
 
 function flattenProgram(block, commands = []) {
   let currentBlock = block;
   while (currentBlock) {
     switch (currentBlock.type) {
-      case 'maze_move_forward': commands.push({ type: 'move' }); break;
-      case 'maze_turn_left': commands.push({ type: 'turn-left' }); break;
-      case 'maze_turn_right': commands.push({ type: 'turn-right' }); break;
-      case 'maze_place_sun': commands.push({ type: 'place', objectType: 'sun' }); break;
-      case 'maze_place_patch': commands.push({ type: 'place', objectType: 'patch' }); break;
-      case 'maze_place_air': commands.push({ type: 'place', objectType: 'air' }); break;
-      case 'maze_repeat': {
+      case 'turn_clockwise':
+        commands.push({ type: 'turn-cw', degrees: Number(currentBlock.getFieldValue('DEGREES')) || 0 });
+        break;
+      case 'turn_counterclockwise':
+        commands.push({ type: 'turn-ccw', degrees: Number(currentBlock.getFieldValue('DEGREES')) || 0 });
+        break;
+      case 'activate_target':
+        commands.push({ type: 'activate' });
+        break;
+      case 'clear_target':
+        commands.push({ type: 'clear' });
+        break;
+      case 'repeat_n': {
         const times = Number(currentBlock.getFieldValue('TIMES')) || 0;
         const nested = flattenProgram(currentBlock.getInputTargetBlock('DO'), []);
         for (let i = 0; i < times; i += 1) commands.push(...nested);
@@ -287,54 +236,27 @@ function flattenProgram(block, commands = []) {
   return commands;
 }
 
-function countProgramCommands(block) {
-  let total = 0;
-  let currentBlock = block;
-  while (currentBlock) {
-    total += 1;
-    if (currentBlock.type === 'maze_repeat') total += countProgramCommands(currentBlock.getInputTargetBlock('DO'));
-    currentBlock = currentBlock.getNextBlock();
-  }
-  return total;
-}
-
 function getExecutionSequence() {
-  const startBlock = workspace.getBlocksByType('maze_start', false)[0];
+  const startBlock = workspace.getBlocksByType('train_start', false)[0];
   if (!startBlock) return [];
   return flattenProgram(startBlock.getNextBlock(), []);
 }
 
-function getProgramCommandCount() {
-  const startBlock = workspace.getBlocksByType('maze_start', false)[0];
-  return startBlock ? countProgramCommands(startBlock.getNextBlock()) : 0;
+function isLevelPassed() {
+  return ANGLES.every((angle) => {
+    const type = levelItems[angle];
+    return type !== 'robo' && type !== 'virus';
+  });
 }
 
-function rotateDirection(direction, turn) {
-  const index = directionOrder.indexOf(direction);
-  const delta = turn === 'turn-left' ? -1 : 1;
-  return directionOrder[(index + delta + 4) % 4];
-}
-
-function isInsideBoard([row, col]) {
-  return row >= 0 && row < GRID_SIZE && col >= 0 && col < GRID_SIZE;
-}
-
-function showLevelCompleteModal(message, canProceed, title = 'Молодец!') {
-  levelCompleteTitle.hidden = false;
-  levelCompleteTitle.textContent = title;
-  levelCompleteMessage.textContent = message;
-  nextLevelButton.hidden = !canProceed;
-  retryLevelButton.hidden = false;
-  levelCompleteModal.classList.remove('hidden');
-}
-
-function hideLevelCompleteModal() {
-  levelCompleteModal.classList.add('hidden');
-}
-
-function checkWin() {
-  const level = getCurrentLevel();
-  return level.targets.every((target) => placedObjects.get(toKey(target.row, target.col)) === target.type);
+function tryAction(actionType) {
+  const currentType = levelItems[gunAngle];
+  if (actionType === 'activate' && currentType === 'robo') {
+    levelItems[gunAngle] = 'roboDone';
+  }
+  if (actionType === 'clear' && currentType === 'virus') {
+    levelItems[gunAngle] = 'virusDone';
+  }
 }
 
 async function runProgram() {
@@ -350,44 +272,24 @@ async function runProgram() {
     for (const command of sequence) {
       await new Promise((resolve) => setTimeout(resolve, 280));
 
-      if (command.type === 'move') {
-        const [dr, dc] = directionVectors[currentDirection];
-        const nextPos = [currentPosition[0] + dr, currentPosition[1] + dc];
-        if (!isInsideBoard(nextPos)) {
-          showLevelCompleteModal('Робот вышел за границы поля 8×8. Попробуй снова.', false, 'Ошибка');
-          return;
-        }
-        currentPosition = nextPos;
-      } else if (command.type === 'turn-left' || command.type === 'turn-right') {
-        currentDirection = rotateDirection(currentDirection, command.type);
-      } else if (command.type === 'place') {
-        placedObjects.set(toKey(currentPosition[0], currentPosition[1]), command.objectType);
+      if (command.type === 'turn-cw') {
+        gunAngle = normalizeAngle(gunAngle + command.degrees);
+      } else if (command.type === 'turn-ccw') {
+        gunAngle = normalizeAngle(gunAngle - command.degrees);
+      } else if (command.type === 'activate' || command.type === 'clear') {
+        tryAction(command.type);
       }
 
       renderBoard();
     }
 
-    const programCommands = getProgramCommandCount();
-    const level = getCurrentLevel();
-
-    if (!checkWin()) {
-      showLevelCompleteModal('Не все объекты стоят на нужных местах.', false, 'Почти!');
+    if (isLevelPassed()) {
+      const hasNext = currentLevelIndex < levels.length - 1;
+      showLevelCompleteModal('Уровень пройден: все роботы активированы и вирусы очищены.', 'Победа!', hasNext);
       return;
     }
 
-    if (programCommands > level.minCommands) {
-      showLevelCompleteModal(
-        `Ты решил задачу, но использовал ${programCommands} команд. Нужно ${level.minCommands} или меньше.`,
-        false,
-        'Есть решение короче',
-      );
-      return;
-    }
-
-    markLevelCompleted(currentLevelIndex);
-    renderLevelOptions();
-    const hasNext = currentLevelIndex < levels.length - 1 && isLevelUnlocked(currentLevelIndex + 1);
-    showLevelCompleteModal('Все объекты расставлены правильно!', hasNext, 'Победа!');
+    showLevelCompleteModal('Не все цели обработаны. Проверь углы поворота и действия.', 'Попробуй ещё', false);
   } finally {
     isProgramRunning = false;
     runButton.disabled = false;
@@ -406,7 +308,5 @@ document.addEventListener('keydown', (event) => {
   if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) runProgram();
 });
 
-loadProgress();
-syncCurrentLevelWithProgress();
 initializeBlockly();
-setLevel(currentLevelIndex);
+setLevel(0);

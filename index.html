@@ -3,20 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Тренажёр по программированию</title>
+    <title>Тренажёр: вращение и градусы</title>
     <link rel="stylesheet" href="styles.css" />
     <link rel="icon" href="data:," />
     <script src="https://unpkg.com/blockly@10.4.3/blockly.min.js"></script>
   </head>
   <body>
     <div class="app-shell">
-
       <main class="panel workspace-panel">
         <div class="workspace-header">
-          <button id="run-program" class="run-button" type="button" aria-label="Запустить программу">
-            ▶ Запуск
-          </button>
-          <span class="run-hint"></span>
+          <button id="run-program" class="run-button" type="button" aria-label="Запустить программу">▶ Запуск</button>
+          <span class="run-hint">Соберите программу из блоков и нажмите запуск.</span>
         </div>
         <div id="blockly-workspace" class="blockly-workspace" aria-label="Поле Blockly"></div>
       </main>
@@ -27,8 +24,6 @@
             <span id="level-progress"></span>
             <h2 id="level-title">Уровень 1</h2>
           </div>
-
-          
           <select id="level-select" class="level-select" aria-label="Выбор уровня"></select>
         </div>
 
@@ -38,9 +33,8 @@
         </div>
 
         <div class="board-wrapper">
-          <div id="board" class="board"></div>
+          <div id="board" class="board" aria-label="Игровое поле"></div>
         </div>
-
       </section>
     </div>
 
@@ -49,9 +43,10 @@
         <h3 id="level-complete-title">Молодец!</h3>
         <p id="level-complete-message"></p>
         <button id="next-level-button" class="next-level-button" type="button">Следующий уровень</button>
-        <button id="retry-level-button" class="retry-level-button" type="button" hidden>Попробовать еще раз</button>
+        <button id="retry-level-button" class="retry-level-button" type="button">Попробовать ещё раз</button>
       </div>
     </div>
+
     <script src="script.js"></script>
   </body>
 </html>

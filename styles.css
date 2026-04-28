@@ -123,15 +123,13 @@ body {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 44%;
-  height: 10px;
-  transform: translateY(-50%) rotate(0deg);
-  transform-origin: left center;
+  width: 26%;
+  height: 8px;
+  transform: translate(-50%, -50%);
   border-radius: 999px;
   opacity: 0;
-  filter: blur(0.3px);
+  filter: blur(0.2px);
   pointer-events: none;
-  transition: opacity .3s ease, transform .3s ease;
 }
 
 .beam--activate {
@@ -144,8 +142,26 @@ body {
   box-shadow: 0 0 12px rgba(239, 68, 68, .7);
 }
 
-.beam--visible {
-  opacity: 1;
+.beam--shoot {
+  animation: beam-shoot .42s ease-out forwards;
+}
+
+@keyframes beam-shoot {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scaleX(.35);
+  }
+  18% {
+    opacity: 1;
+  }
+  82% {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--beam-dx, 0px)), calc(-50% + var(--beam-dy, 0px))) scaleX(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--beam-dx, 0px)), calc(-50% + var(--beam-dy, 0px))) scaleX(1);
+  }
 }
 
 .modal { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(17, 24, 39, .62); }

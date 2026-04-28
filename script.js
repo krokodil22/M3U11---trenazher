@@ -304,7 +304,7 @@ async function playBeam(actionType) {
   beamElement.style.left = `${beamStartX.toFixed(2)}px`;
   beamElement.style.top = `${beamStartY.toFixed(2)}px`;
   beamElement.style.width = `${shotDistance.toFixed(2)}px`;
-  beamElement.style.setProperty('--beam-rotation', `${gunRenderAngle}deg`);
+  beamElement.style.setProperty('--beam-rotation', `${gunRenderAngle - 90}deg`);
   beamElement.classList.remove('beam--activate', 'beam--clear', 'beam--shoot');
   beamElement.classList.add(actionType === 'activate' ? 'beam--activate' : 'beam--clear');
   void beamElement.offsetWidth;

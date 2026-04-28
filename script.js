@@ -53,8 +53,12 @@ const levelRule = document.getElementById('level-rule');
 let workspace;
 let currentLevelIndex = 0;
 let gunAngle = 0;
+let gunRenderAngle = 0;
 let levelItems = {};
 let isProgramRunning = false;
+let orbitElements = {};
+let gunElement;
+let beamElement;
 
 const defineBlocksWithJsonArray = Blockly.common?.defineBlocksWithJsonArray ?? Blockly.defineBlocksWithJsonArray;
 
@@ -149,6 +153,7 @@ function angleToPosition(angle) {
 
 function renderBoard() {
   board.innerHTML = '';
+  orbitElements = {};
 
   ANGLES.forEach((angle) => {
     const type = levelItems[angle];
@@ -159,12 +164,17 @@ function renderBoard() {
     item.style.left = `${position.x}%`;
     item.style.top = `${position.y}%`;
     board.appendChild(item);
+    orbitElements[angle] = item;
   });
 
-  const gun = document.createElement('div');
-  gun.className = 'gun';
-  gun.style.transform = `translate(-50%, -50%) rotate(${gunAngle}deg)`;
-  board.appendChild(gun);
+  beamElement = document.createElement('div');
+  beamElement.className = 'beam';
+  board.appendChild(beamElement);
+
+  gunElement = document.createElement('div');
+  gunElement.className = 'gun';
+  gunElement.style.transform = `translate(-50%, -50%) rotate(${gunRenderAngle}deg)`;
+  board.appendChild(gunElement);
 
   const level = levels[currentLevelIndex];
   levelTitle.textContent = level.title;
@@ -193,6 +203,7 @@ function showLevelCompleteModal(message, title, canProceed) {
 
 function resetLevelState() {
   gunAngle = 0;
+  gunRenderAngle = 0;
   levelItems = cloneItemsForLevel(currentLevelIndex);
   renderBoard();
 }
@@ -259,6 +270,46 @@ function tryAction(actionType) {
   }
 }
 
+function refreshOrbitItem(angle) {
+  const item = orbitElements[angle];
+  if (!item) return;
+  item.style.backgroundImage = `url('./${objectAssets[levelItems[angle]]}')`;
+}
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function animateTurn(degrees) {
+  const duration = Math.max(260, Math.round(Math.abs(degrees) * 8));
+  gunRenderAngle += degrees;
+  gunAngle = normalizeAngle(gunAngle + degrees);
+
+  if (!gunElement) return;
+
+  gunElement.style.transition = `transform ${duration}ms cubic-bezier(0.22, 0.61, 0.36, 1)`;
+  gunElement.style.transform = `translate(-50%, -50%) rotate(${gunRenderAngle}deg)`;
+  await wait(duration + 20);
+}
+
+async function playBeam(actionType) {
+  if (!beamElement) return;
+  const shotDistance = board.clientWidth * 0.42;
+  const radians = ((gunAngle - 90) * Math.PI) / 180;
+  const deltaX = Math.cos(radians) * shotDistance;
+  const deltaY = Math.sin(radians) * shotDistance;
+
+  beamElement.style.setProperty('--beam-dx', `${deltaX.toFixed(2)}px`);
+  beamElement.style.setProperty('--beam-dy', `${deltaY.toFixed(2)}px`);
+  beamElement.style.setProperty('--beam-rotation', `${gunRenderAngle}deg`);
+  beamElement.classList.remove('beam--activate', 'beam--clear', 'beam--shoot');
+  beamElement.classList.add(actionType === 'activate' ? 'beam--activate' : 'beam--clear');
+  void beamElement.offsetWidth;
+  beamElement.classList.add('beam--shoot');
+  await wait(420);
+  beamElement.classList.remove('beam--shoot');
+}
+
 async function runProgram() {
   if (isProgramRunning) return;
   const sequence = getExecutionSequence();
@@ -270,17 +321,17 @@ async function runProgram() {
 
   try {
     for (const command of sequence) {
-      await new Promise((resolve) => setTimeout(resolve, 280));
+      await wait(160);
 
       if (command.type === 'turn-cw') {
-        gunAngle = normalizeAngle(gunAngle + command.degrees);
+        await animateTurn(command.degrees);
       } else if (command.type === 'turn-ccw') {
-        gunAngle = normalizeAngle(gunAngle - command.degrees);
+        await animateTurn(-command.degrees);
       } else if (command.type === 'activate' || command.type === 'clear') {
         tryAction(command.type);
+        refreshOrbitItem(gunAngle);
+        await playBeam(command.type);
       }
-
-      renderBoard();
     }
 
     if (isLevelPassed()) {

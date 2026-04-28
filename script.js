@@ -1,5 +1,6 @@
 const ANGLES = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330];
 const DEGREE_OPTIONS = [['30', '30'], ['60', '60'], ['90', '90'], ['120', '120'], ['180', '180']];
+const PROGRESS_STORAGE_KEY = 'trenazher-level-progress-v1';
 
 const objectAssets = {
   neutral: 'neutral.svg',
@@ -12,26 +13,47 @@ const objectAssets = {
 const levels = [
   {
     title: 'Уровень 1',
-    hint: 'Поверни пушку к роботу и активируй, затем к вирусу и очисти.',
+    hint: 'Все нейтральные, только 60° — робот.',
+    commandLimit: 2,
     items: {
       0: 'neutral', 30: 'neutral', 60: 'robo', 90: 'neutral', 120: 'neutral', 150: 'neutral',
-      180: 'virus', 210: 'neutral', 240: 'neutral', 270: 'neutral', 300: 'neutral', 330: 'neutral',
+      180: 'neutral', 210: 'neutral', 240: 'neutral', 270: 'neutral', 300: 'neutral', 330: 'neutral',
     },
   },
   {
     title: 'Уровень 2',
-    hint: 'Активируй всех роботов и очисти все вирусы.',
+    hint: '90° — робот, 120° — вирус, остальные нейтральные.',
+    commandLimit: 4,
     items: {
-      0: 'virus', 30: 'neutral', 60: 'robo', 90: 'neutral', 120: 'neutral', 150: 'virus',
-      180: 'neutral', 210: 'neutral', 240: 'robo', 270: 'neutral', 300: 'neutral', 330: 'neutral',
+      0: 'neutral', 30: 'neutral', 60: 'neutral', 90: 'robo', 120: 'virus', 150: 'neutral',
+      180: 'neutral', 210: 'neutral', 240: 'neutral', 270: 'neutral', 300: 'neutral', 330: 'neutral',
     },
   },
   {
     title: 'Уровень 3',
-    hint: 'Используй цикл, чтобы быстрее пройти уровень.',
+    hint: '90° — вирус, 150° — робот, 270° — вирус, 330° — робот.',
+    commandLimit: 8,
     items: {
-      0: 'neutral', 30: 'robo', 60: 'neutral', 90: 'virus', 120: 'neutral', 150: 'robo',
-      180: 'neutral', 210: 'virus', 240: 'neutral', 270: 'neutral', 300: 'robo', 330: 'neutral',
+      0: 'neutral', 30: 'neutral', 60: 'neutral', 90: 'virus', 120: 'neutral', 150: 'robo',
+      180: 'neutral', 210: 'neutral', 240: 'neutral', 270: 'virus', 300: 'neutral', 330: 'robo',
+    },
+  },
+  {
+    title: 'Уровень 4',
+    hint: '0°, 60°, 120°, 180°, 240°, 300° — вирусы, остальные нейтральные.',
+    commandLimit: 3,
+    items: {
+      0: 'virus', 30: 'neutral', 60: 'virus', 90: 'neutral', 120: 'virus', 150: 'neutral',
+      180: 'virus', 210: 'neutral', 240: 'virus', 270: 'neutral', 300: 'virus', 330: 'neutral',
+    },
+  },
+  {
+    title: 'Уровень 5',
+    hint: 'Чередование типов по кругу: В, Р, Н.',
+    commandLimit: 5,
+    items: {
+      0: 'virus', 30: 'robo', 60: 'neutral', 90: 'virus', 120: 'robo', 150: 'neutral',
+      180: 'virus', 210: 'robo', 240: 'neutral', 270: 'virus', 300: 'robo', 330: 'neutral',
     },
   },
 ];
@@ -59,6 +81,7 @@ let isProgramRunning = false;
 let orbitElements = {};
 let gunElement;
 let beamElement;
+let passedLevels = levels.map(() => false);
 
 const defineBlocksWithJsonArray = Blockly.common?.defineBlocksWithJsonArray ?? Blockly.defineBlocksWithJsonArray;
 
@@ -134,6 +157,33 @@ function initializeBlockly() {
   window.addEventListener('resize', () => Blockly.svgResize(workspace));
 }
 
+function loadProgress() {
+  try {
+    const raw = window.localStorage.getItem(PROGRESS_STORAGE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed?.passedLevels)) return;
+
+    passedLevels = levels.map((_, idx) => Boolean(parsed.passedLevels[idx]));
+  } catch (_error) {
+    passedLevels = levels.map(() => false);
+  }
+}
+
+function saveProgress() {
+  window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify({ passedLevels }));
+}
+
+function getMaxUnlockedLevelIndex() {
+  let unlocked = 0;
+  while (unlocked < levels.length - 1 && passedLevels[unlocked]) unlocked += 1;
+  return unlocked;
+}
+
+function isLevelUnlocked(index) {
+  return index <= getMaxUnlockedLevelIndex();
+}
+
 function normalizeAngle(angle) {
   return ((angle % 360) + 360) % 360;
 }
@@ -180,12 +230,17 @@ function renderBoard() {
   levelTitle.textContent = level.title;
   levelProgress.textContent = `${currentLevelIndex + 1} / ${levels.length}`;
   levelHint.textContent = level.hint;
-  levelRule.textContent = 'Цель: активировать всех роботов и очистить все вирусы.';
+  levelRule.textContent = `Лимит: ${level.commandLimit} команд(ы). Пройденный уровень отмечается ✅.`;
 }
 
 function renderLevelOptions() {
   levelSelect.innerHTML = levels
-    .map((level, idx) => `<option value="${idx}" ${idx === currentLevelIndex ? 'selected' : ''}>${level.title}</option>`)
+    .map((level, idx) => {
+      const passed = passedLevels[idx];
+      const unlocked = isLevelUnlocked(idx);
+      const icon = passed ? '✅' : unlocked ? '•' : '🔒';
+      return `<option value="${idx}" ${idx === currentLevelIndex ? 'selected' : ''} ${unlocked ? '' : 'disabled'}>${icon} ${level.title}</option>`;
+    })
     .join('');
 }
 
@@ -209,7 +264,7 @@ function resetLevelState() {
 }
 
 function setLevel(index) {
-  if (index < 0 || index >= levels.length) return;
+  if (index < 0 || index >= levels.length || !isLevelUnlocked(index)) return;
   currentLevelIndex = index;
   hideLevelCompleteModal();
   resetWorkspace();
@@ -313,11 +368,28 @@ async function playBeam(actionType) {
   beamElement.classList.remove('beam--shoot');
 }
 
+function markLevelPassed(index) {
+  if (passedLevels[index]) return;
+  passedLevels[index] = true;
+  saveProgress();
+  renderLevelOptions();
+}
+
 async function runProgram() {
   if (isProgramRunning) return;
   const sequence = getExecutionSequence();
+  const level = levels[currentLevelIndex];
   resetLevelState();
   if (sequence.length === 0) return;
+
+  if (sequence.length > level.commandLimit) {
+    showLevelCompleteModal(
+      `Превышен лимит: ${sequence.length} команд при максимуме ${level.commandLimit}. Прохождение не засчитано.`,
+      'Лимит команд превышен',
+      false,
+    );
+    return;
+  }
 
   isProgramRunning = true;
   runButton.disabled = true;
@@ -338,8 +410,9 @@ async function runProgram() {
     }
 
     if (isLevelPassed()) {
+      markLevelPassed(currentLevelIndex);
       const hasNext = currentLevelIndex < levels.length - 1;
-      showLevelCompleteModal('Уровень пройден: все роботы активированы и вирусы очищены.', 'Победа!', hasNext);
+      showLevelCompleteModal('Уровень пройден: цели обработаны в рамках лимита команд.', 'Победа!', hasNext);
       return;
     }
 
@@ -362,5 +435,6 @@ document.addEventListener('keydown', (event) => {
   if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) runProgram();
 });
 
+loadProgress();
 initializeBlockly();
 setLevel(0);

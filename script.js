@@ -230,7 +230,7 @@ function renderBoard() {
   levelTitle.textContent = level.title;
   levelProgress.textContent = `${currentLevelIndex + 1} / ${levels.length}`;
   levelHint.textContent = '';
-  levelRule.textContent = `Можно использовать ${level.commandLimit} команд`;
+  levelRule.textContent = `Можно использовать ${level.commandLimit} команд(-ы)`;
 }
 
 function renderLevelOptions() {

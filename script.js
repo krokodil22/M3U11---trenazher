@@ -308,6 +308,38 @@ function getExecutionSequence() {
   return flattenProgram(startBlock.getNextBlock(), []);
 }
 
+function countProgramCommands(block) {
+  let commandCount = 0;
+  let currentBlock = block;
+
+  while (currentBlock) {
+    switch (currentBlock.type) {
+      case 'turn_clockwise':
+      case 'turn_counterclockwise':
+      case 'activate_target':
+      case 'clear_target':
+        commandCount += 1;
+        break;
+      case 'repeat_n':
+        commandCount += 1;
+        commandCount += countProgramCommands(currentBlock.getInputTargetBlock('DO'));
+        break;
+      default:
+        break;
+    }
+
+    currentBlock = currentBlock.getNextBlock();
+  }
+
+  return commandCount;
+}
+
+function getProgramCommandCount() {
+  const startBlock = workspace.getBlocksByType('train_start', false)[0];
+  if (!startBlock) return 0;
+  return countProgramCommands(startBlock.getNextBlock());
+}
+
 function isLevelPassed() {
   return ANGLES.every((angle) => {
     const type = levelItems[angle];
@@ -378,13 +410,14 @@ function markLevelPassed(index) {
 async function runProgram() {
   if (isProgramRunning) return;
   const sequence = getExecutionSequence();
+  const commandCount = getProgramCommandCount();
   const level = levels[currentLevelIndex];
   resetLevelState();
   if (sequence.length === 0) return;
 
-  if (sequence.length > level.commandLimit) {
+  if (commandCount > level.commandLimit) {
     showLevelCompleteModal(
-      `Превышен лимит: ${sequence.length} команд при максимуме ${level.commandLimit}. Прохождение не засчитано.`,
+      `Превышен лимит: ${commandCount} команд при максимуме ${level.commandLimit}. Прохождение не засчитано.`,
       'Лимит команд превышен',
       false,
     );

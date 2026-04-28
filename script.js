@@ -179,6 +179,13 @@ function initializeBlockly() {
     move: { scrollbars: true, drag: true, wheel: true },
   });
 
+  const workspaceSvg = workspace.getParentSvg();
+  workspaceSvg.addEventListener('wheel', (event) => {
+    const targetElement = event.target instanceof Element ? event.target : null;
+    if (event.deltaY === 0 || targetElement?.closest('.blocklyFlyout')) return;
+    event.preventDefault();
+  }, { passive: false });
+
   resetWorkspace();
   requestAnimationFrame(() => Blockly.svgResize(workspace));
   window.addEventListener('resize', () => Blockly.svgResize(workspace));

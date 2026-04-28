@@ -1,5 +1,5 @@
 const ANGLES = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330];
-const DEGREE_OPTIONS = [['30', '30'], ['60', '60'], ['90', '90'], ['120', '120'], ['180', '180']];
+const DEGREE_OPTIONS = [['30', '30'], ['60', '60'], ['90', '90'], ['120', '120'], ['150', '150'], ['180', '180']];
 const PROGRESS_STORAGE_KEY = 'trenazher-level-progress-v1';
 
 const objectAssets = {

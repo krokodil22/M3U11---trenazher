@@ -116,7 +116,36 @@ body {
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
-  transition: transform .2s ease;
+  transition: transform .32s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.beam {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 44%;
+  height: 10px;
+  transform: translateY(-50%) rotate(0deg);
+  transform-origin: left center;
+  border-radius: 999px;
+  opacity: 0;
+  filter: blur(0.3px);
+  pointer-events: none;
+  transition: opacity .3s ease, transform .3s ease;
+}
+
+.beam--activate {
+  background: linear-gradient(90deg, rgba(34, 197, 94, .9) 0%, rgba(134, 239, 172, .5) 72%, rgba(134, 239, 172, 0) 100%);
+  box-shadow: 0 0 12px rgba(34, 197, 94, .7);
+}
+
+.beam--clear {
+  background: linear-gradient(90deg, rgba(239, 68, 68, .95) 0%, rgba(252, 165, 165, .5) 72%, rgba(252, 165, 165, 0) 100%);
+  box-shadow: 0 0 12px rgba(239, 68, 68, .7);
+}
+
+.beam--visible {
+  opacity: 1;
 }
 
 .modal { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(17, 24, 39, .62); }

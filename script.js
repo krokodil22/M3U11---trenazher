@@ -280,6 +280,7 @@ function renderLevelOptions() {
 
 function hideLevelCompleteModal() {
   levelCompleteModal.classList.add('hidden');
+  document.body.classList.remove('modal-open');
 }
 
 function showLevelCompleteModal(message, canProceed, retryLabel = 'Попробовать еще раз') {
@@ -290,6 +291,7 @@ function showLevelCompleteModal(message, canProceed, retryLabel = 'Попроб�
   retryLevelButton.textContent = retryLabel;
   retryLevelButton.hidden = false;
   levelCompleteModal.classList.remove('hidden');
+  document.body.classList.add('modal-open');
 }
 
 function resetLevelState() {

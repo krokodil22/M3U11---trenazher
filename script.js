@@ -31,6 +31,33 @@ const levels = [
   },
   {
     title: 'Уровень 3',
+    hint: '330°, 300°, 270°, 240° — роботы, остальные нейтральные.',
+    commandLimit: 3,
+    items: {
+      0: 'neutral', 30: 'neutral', 60: 'neutral', 90: 'neutral', 120: 'neutral', 150: 'neutral',
+      180: 'neutral', 210: 'neutral', 240: 'robo', 270: 'robo', 300: 'robo', 330: 'robo',
+    },
+  },
+  {
+    title: 'Уровень 4',
+    hint: '300°, 240°, 180°, 120° — вирусы, остальные нейтральные.',
+    commandLimit: 3,
+    items: {
+      0: 'neutral', 30: 'neutral', 60: 'neutral', 90: 'neutral', 120: 'virus', 150: 'neutral',
+      180: 'virus', 210: 'neutral', 240: 'virus', 270: 'neutral', 300: 'virus', 330: 'neutral',
+    },
+  },
+  {
+    title: 'Уровень 5',
+    hint: '180° — вирус, 60° и 300° — роботы, остальные нейтральные.',
+    commandLimit: 5,
+    items: {
+      0: 'neutral', 30: 'neutral', 60: 'robo', 90: 'neutral', 120: 'neutral', 150: 'neutral',
+      180: 'virus', 210: 'neutral', 240: 'neutral', 270: 'neutral', 300: 'robo', 330: 'neutral',
+    },
+  },
+  {
+    title: 'Уровень 6',
     hint: '90° — вирус, 150° — робот, 270° — вирус, 330° — робот.',
     commandLimit: 8,
     items: {
@@ -39,7 +66,7 @@ const levels = [
     },
   },
   {
-    title: 'Уровень 4',
+    title: 'Уровень 7',
     hint: '0°, 60°, 120°, 180°, 240°, 300° — вирусы, остальные нейтральные.',
     commandLimit: 3,
     items: {
@@ -48,7 +75,7 @@ const levels = [
     },
   },
   {
-    title: 'Уровень 5',
+    title: 'Уровень 8',
     hint: 'Чередование типов по кругу: В, Р, Н.',
     commandLimit: 5,
     items: {

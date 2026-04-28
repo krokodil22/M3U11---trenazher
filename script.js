@@ -294,13 +294,16 @@ async function animateTurn(degrees) {
 
 async function playBeam(actionType) {
   if (!beamElement) return;
-  const shotDistance = board.clientWidth * 0.42;
+  const boardSize = board.clientWidth;
+  const shotDistance = boardSize * 0.42;
+  const gunTipOffset = boardSize * 0.085;
   const radians = ((gunAngle - 90) * Math.PI) / 180;
-  const deltaX = Math.cos(radians) * shotDistance;
-  const deltaY = Math.sin(radians) * shotDistance;
+  const beamStartX = boardSize / 2 + Math.cos(radians) * gunTipOffset;
+  const beamStartY = boardSize / 2 + Math.sin(radians) * gunTipOffset;
 
-  beamElement.style.setProperty('--beam-dx', `${deltaX.toFixed(2)}px`);
-  beamElement.style.setProperty('--beam-dy', `${deltaY.toFixed(2)}px`);
+  beamElement.style.left = `${beamStartX.toFixed(2)}px`;
+  beamElement.style.top = `${beamStartY.toFixed(2)}px`;
+  beamElement.style.width = `${shotDistance.toFixed(2)}px`;
   beamElement.style.setProperty('--beam-rotation', `${gunRenderAngle}deg`);
   beamElement.classList.remove('beam--activate', 'beam--clear', 'beam--shoot');
   beamElement.classList.add(actionType === 'activate' ? 'beam--activate' : 'beam--clear');

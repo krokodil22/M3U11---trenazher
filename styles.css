@@ -123,9 +123,10 @@ body {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 26%;
+  width: 42%;
   height: 8px;
-  transform: translate(-50%, -50%) rotate(var(--beam-rotation, 0deg));
+  transform: translateY(-50%) rotate(var(--beam-rotation, 0deg)) scaleX(0);
+  transform-origin: left center;
   border-radius: 999px;
   opacity: 0;
   filter: blur(0.2px);
@@ -149,18 +150,18 @@ body {
 @keyframes beam-shoot {
   0% {
     opacity: 0;
-    transform: translate(-50%, -50%) rotate(var(--beam-rotation, 0deg)) scaleX(.35);
+    transform: translateY(-50%) rotate(var(--beam-rotation, 0deg)) scaleX(0.08);
   }
   18% {
     opacity: 1;
   }
   82% {
     opacity: 1;
-    transform: translate(calc(-50% + var(--beam-dx, 0px)), calc(-50% + var(--beam-dy, 0px))) rotate(var(--beam-rotation, 0deg)) scaleX(1);
+    transform: translateY(-50%) rotate(var(--beam-rotation, 0deg)) scaleX(1);
   }
   100% {
     opacity: 0;
-    transform: translate(calc(-50% + var(--beam-dx, 0px)), calc(-50% + var(--beam-dy, 0px))) rotate(var(--beam-rotation, 0deg)) scaleX(1);
+    transform: translateY(-50%) rotate(var(--beam-rotation, 0deg)) scaleX(1);
   }
 }
 

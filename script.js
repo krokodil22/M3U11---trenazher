@@ -229,8 +229,8 @@ function renderBoard() {
   const level = levels[currentLevelIndex];
   levelTitle.textContent = level.title;
   levelProgress.textContent = `${currentLevelIndex + 1} / ${levels.length}`;
-  levelHint.textContent = level.hint;
-  levelRule.textContent = `Лимит: ${level.commandLimit} команд(ы). Пройденный уровень отмечается ✅.`;
+  levelHint.textContent = '';
+  levelRule.textContent = `Можно использовать ${level.commandLimit} команд`;
 }
 
 function renderLevelOptions() {
@@ -248,10 +248,12 @@ function hideLevelCompleteModal() {
   levelCompleteModal.classList.add('hidden');
 }
 
-function showLevelCompleteModal(message, title, canProceed) {
-  levelCompleteTitle.textContent = title;
+function showLevelCompleteModal(message, canProceed, retryLabel = 'Попробовать еще раз') {
+  levelCompleteTitle.textContent = '';
+  levelCompleteTitle.hidden = true;
   levelCompleteMessage.textContent = message;
   nextLevelButton.hidden = !canProceed;
+  retryLevelButton.textContent = retryLabel;
   retryLevelButton.hidden = false;
   levelCompleteModal.classList.remove('hidden');
 }
@@ -416,11 +418,7 @@ async function runProgram() {
   if (sequence.length === 0) return;
 
   if (commandCount > level.commandLimit) {
-    showLevelCompleteModal(
-      `Превышен лимит: ${commandCount} команд при максимуме ${level.commandLimit}. Прохождение не засчитано.`,
-      'Лимит команд превышен',
-      false,
-    );
+    showLevelCompleteModal('Слишком много команд!', false, 'Попробовать еще раз');
     return;
   }
 
@@ -444,12 +442,11 @@ async function runProgram() {
 
     if (isLevelPassed()) {
       markLevelPassed(currentLevelIndex);
-      const hasNext = currentLevelIndex < levels.length - 1;
-      showLevelCompleteModal('Уровень пройден: цели обработаны в рамках лимита команд.', 'Победа!', hasNext);
+      showLevelCompleteModal('Молодец! Ты справился!', true, 'Еще раз');
       return;
     }
 
-    showLevelCompleteModal('Не все цели обработаны. Проверь углы поворота и действия.', 'Попробуй ещё', false);
+    showLevelCompleteModal('Вирус пока не побежден!', false, 'Попробовать еще раз');
   } finally {
     isProgramRunning = false;
     runButton.disabled = false;
